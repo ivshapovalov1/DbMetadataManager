@@ -18,6 +18,7 @@ public class FileView implements View {
     @Override
     public void write(String message) {
         //TODO write to file
+        System.out.println(message);
     }
 
     @Override

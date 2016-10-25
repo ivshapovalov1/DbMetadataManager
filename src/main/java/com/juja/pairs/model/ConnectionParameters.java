@@ -11,13 +11,14 @@ public class ConnectionParameters {
 
 
     public static ConnectionParameters parseFromFile(String fileName) {
-        String dbType = "";
-        String ipHost = "";
-        String ipPort = "";
-        String dbName = "";
-        String dbUser = "";
-        String dbPassword = "";
-        String dbTableName = "";
+        String dbType = "MySQL";
+        String ipHost = "127.0.0.1";
+        String ipPort = "3306";
+        String dbName = "test";
+        String dbUser = "root";
+        String dbPassword = "root";
+        String dbTableName = "users2";
+
         //TODO parse from file
         return new ConnectionParameters.Builder()
                 .addDbType(dbType)
@@ -28,6 +29,34 @@ public class ConnectionParameters {
                 .addDbPassword(dbPassword)
                 .addDbTableName(dbTableName)
                 .build();
+    }
+
+    public String getDbName() {
+        return dbName;
+    }
+
+    public String getDbPassword() {
+        return dbPassword;
+    }
+
+    public String getDbTableName() {
+        return dbTableName;
+    }
+
+    public String getDbType() {
+        return dbType;
+    }
+
+    public String getDbUser() {
+        return dbUser;
+    }
+
+    public String getIpHost() {
+        return ipHost;
+    }
+
+    public String getIpPort() {
+        return ipPort;
     }
 
     private ConnectionParameters(Builder builder) {

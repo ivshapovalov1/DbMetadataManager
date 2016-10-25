@@ -6,6 +6,8 @@ import java.sql.Connection;
 
 public class DbMetadataReader {
 
+    public static final char LINE_SEPARATOR = '\n';
+    public static final char COLUMN_SEPARATOR = '|';
     Connection connection;
     //TODO fields & connection
     ConnectionParameters parameters;
