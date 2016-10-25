@@ -68,11 +68,18 @@ public class MySQLMetadataReader extends DbMetadataReader implements MetadataRea
             result.append(FK_SECTION).append(LINE_SEPARATOR);
             result.append(getTableForeignKeyWithDescription());
 
+            result.append("query create table");
+            result.append(fillDB());
 
         } catch (Exception e) {
             e.printStackTrace();
         }
         return result.toString();
+    }
+
+    private String fillDB() {
+
+        return "";
     }
 
     private String getTableComment() {
@@ -102,15 +109,15 @@ public class MySQLMetadataReader extends DbMetadataReader implements MetadataRea
                 columnDescription.append(rs.getString("COLUMN_NAME")).append(COLUMN_SEPARATOR);
                 columnDescription.append(rs.getString("COLUMN_COMMENT")).append(COLUMN_SEPARATOR);
                 String columnFullType = rs.getString("COLUMN_TYPE");
-                String columnType = columnFullType.substring(0,columnFullType.indexOf("("));
-                String columnSize = columnFullType.substring(columnFullType.indexOf("(")+1,columnFullType.length()-1);
+                String columnType = columnFullType.substring(0, columnFullType.indexOf("("));
+                String columnSize = columnFullType.substring(columnFullType.indexOf("(") + 1, columnFullType.length() - 1);
                 columnDescription.append(columnType).append(COLUMN_SEPARATOR);
                 columnDescription.append(columnSize).append(COLUMN_SEPARATOR);
                 String nullable = "";
                 if (rs.getString("IS_NULLABLE").equalsIgnoreCase("not null")) {
-                    nullable="not null";
+                    nullable = "not null";
                 } else {
-                    nullable="null";
+                    nullable = "null";
                 }
                 columnDescription.append(nullable).append(COLUMN_SEPARATOR);
                 columnDescription.append(rs.getString("COLUMN_DEFAULT"));
@@ -125,7 +132,7 @@ public class MySQLMetadataReader extends DbMetadataReader implements MetadataRea
 
     private StringBuilder getTableIndexesWithDescription() {
         StringBuilder indexDescription = new StringBuilder();
-        Map<String,String> indexContent=new HashMap<>();
+        Map<String, String> indexContent = new HashMap<>();
         try (Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(String.format("select INDEX_NAME,INDEX_TYPE,COLUMN_NAME,SEQ_IN_INDEX FROM INFORMATION_SCHEMA.STATISTICS " +
                              "WHERE table_name = '%s' AND table_schema = '%s' order by INDEX_NAME ASC, SEQ_IN_INDEX asc",
@@ -135,20 +142,26 @@ public class MySQLMetadataReader extends DbMetadataReader implements MetadataRea
                 String indexName = rs.getString("INDEX_NAME");
                 String indexField = rs.getString("COLUMN_NAME");
 
-                if (indexContent.containsKey(indexName)){
-                    indexContent.put(indexName,indexContent.get(indexName).concat(",").concat(indexField));
-                }  else {
-                    indexContent.put(indexName,indexField);
+                if (indexContent.containsKey(indexName)) {
+                    indexContent.put(indexName, indexContent.get(indexName).concat(",").concat(indexField));
+                } else {
+                    indexContent.put(indexName, indexField);
                 }
 
             }
-            rs.first();
+            rs.beforeFirst();
             while (rs.next()) {
                 String indexName = rs.getString("INDEX_NAME");
+                if (!indexContent.containsKey(indexName)) {
+                    continue;
+                }
                 indexDescription.append(indexName).append(COLUMN_SEPARATOR);
                 indexDescription.append(rs.getString("INDEX_TYPE")).append(COLUMN_SEPARATOR);
-                indexDescription.append(indexContent.get(indexName));
+                indexDescription.append(indexContent.get(indexName)).append(COLUMN_SEPARATOR);
                 indexDescription.append(LINE_SEPARATOR);
+
+                indexContent.remove(indexName);
+
             }
             return indexDescription;
         } catch (SQLException e) {
@@ -158,33 +171,50 @@ public class MySQLMetadataReader extends DbMetadataReader implements MetadataRea
     }
 
     private StringBuilder getTableForeignKeyWithDescription() {
-        StringBuilder indexDescription = new StringBuilder();
-        Map<String,String> indexContent=new HashMap<>();
+        StringBuilder fkDescription = new StringBuilder();
+        Map<String, String> foreignKeyContent = new HashMap<>();
+        Map<String, String> foreignKeyReferencedContent = new HashMap<>();
         try (Statement stmt = connection.createStatement();
-             ResultSet rs = stmt.executeQuery(String.format("select INDEX_NAME,INDEX_TYPE,COLUMN_NAME,SEQ_IN_INDEX FROM INFORMATION_SCHEMA.STATISTICS " +
-                             "WHERE table_name = '%s' AND table_schema = '%s' order by INDEX_NAME ASC, SEQ_IN_INDEX asc",
+             ResultSet rs = stmt.executeQuery(String.format("" +
+                             "SELECT CONSTRAINT_NAME,COLUMN_NAME," +
+                             "REFERENCED_TABLE_NAME,REFERENCED_COLUMN_NAME  FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE " +
+                             "WHERE table_name = '%s' AND table_schema = '%s' AND CONSTRAINT_NAME<>'PRIMARY'" +
+                             "order by CONSTRAINT_NAME,POSITION_IN_UNIQUE_CONSTRAINT",
                      parameters.getDbTableName(), parameters.getDbName()))) {
 
             while (rs.next()) {
-                String indexName = rs.getString("INDEX_NAME");
-                String indexField = rs.getString("COLUMN_NAME");
+                String fkName = rs.getString("CONSTRAINT_NAME");
+                String fkField = rs.getString("COLUMN_NAME");
+                String fkReferencedField = rs.getString("REFERENCED_COLUMN_NAME");
 
-                if (indexContent.containsKey(indexName)){
-                    indexContent.put(indexName,indexContent.get(indexName).concat(",").concat(indexField));
-                }  else {
-                    indexContent.put(indexName,indexField);
+                if (foreignKeyContent.containsKey(fkName)) {
+                    foreignKeyContent.put(fkName, foreignKeyContent.get(fkName).concat(",").concat(fkField));
+                } else {
+                    foreignKeyContent.put(fkName, fkField);
                 }
+                if (foreignKeyReferencedContent.containsKey(fkName)) {
+                    foreignKeyReferencedContent.put(fkName, foreignKeyReferencedContent.get(fkName).concat(",").concat(fkReferencedField));
+                } else {
+                    foreignKeyReferencedContent.put(fkName, fkReferencedField);
+                }
+            }
+            rs.beforeFirst();
+            while (rs.next()) {
+                String fkName = rs.getString("CONSTRAINT_NAME");
+                if (!foreignKeyContent.containsKey(fkName)) {
+                    continue;
+                }
+                fkDescription.append(fkName).append(COLUMN_SEPARATOR);
+                fkDescription.append(foreignKeyContent.get(fkName)).append(COLUMN_SEPARATOR);
+                fkDescription.append(rs.getString("REFERENCED_TABLE_NAME")).append(COLUMN_SEPARATOR);
+                fkDescription.append(foreignKeyReferencedContent.get(fkName)).append(COLUMN_SEPARATOR);
+                fkDescription.append(LINE_SEPARATOR);
+
+                foreignKeyContent.remove(fkName);
+                foreignKeyReferencedContent.remove(fkName);
 
             }
-            rs.first();
-            while (rs.next()) {
-                String indexName = rs.getString("INDEX_NAME");
-                indexDescription.append(indexName).append(COLUMN_SEPARATOR);
-                indexDescription.append(rs.getString("INDEX_TYPE")).append(COLUMN_SEPARATOR);
-                indexDescription.append(indexContent.get(indexName));
-                indexDescription.append(LINE_SEPARATOR);
-            }
-            return indexDescription;
+            return fkDescription;
         } catch (SQLException e) {
             throw new RuntimeException("It is not possible to obtain the description of table column", e);
         }

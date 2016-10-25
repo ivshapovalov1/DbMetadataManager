@@ -17,7 +17,7 @@ public class ConnectionParameters {
         String dbName = "test";
         String dbUser = "root";
         String dbPassword = "root";
-        String dbTableName = "users2";
+        String dbTableName = "study";
 
         //TODO parse from file
         return new ConnectionParameters.Builder()
