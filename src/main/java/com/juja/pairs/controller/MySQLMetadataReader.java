@@ -1,13 +1,16 @@
 package com.juja.pairs.controller;
 
+import com.juja.pairs.model.ConnectionParameters;
+
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-public class MySQLMetadataReader implements MetadataReader {
+public class MySQLMetadataReader extends DbMetadataReader implements MetadataReader {
 
-    Connection connection;
-    //TODO fields & connection
+    public MySQLMetadataReader(ConnectionParameters parameters) {
+        super(parameters);
+    }
 
     @Override
     public String read() {
