@@ -14,7 +14,6 @@ public class MySQLMetadataReader extends DbMetadataReader implements MetadataRea
     private static final String INDEX_SECTION = "index";
     private static final String FK_SECTION = "fk";
 
-
     static {
         try {
             Class.forName("org.mysql.Driver");
