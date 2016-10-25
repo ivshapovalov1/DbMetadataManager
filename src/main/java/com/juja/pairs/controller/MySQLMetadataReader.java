@@ -30,6 +30,9 @@ public class MySQLMetadataReader extends DbMetadataReader implements MetadataRea
         }
     }
 
+
+
+
     public MySQLMetadataReader(ConnectionParameters parameters) {
         super(parameters);
         //TODO Connection
@@ -91,6 +94,9 @@ public class MySQLMetadataReader extends DbMetadataReader implements MetadataRea
         }
 
     }
+
+
+
 
     private StringBuilder getTableColumnsWithDescription() {
         StringBuilder columnDescription = new StringBuilder();
