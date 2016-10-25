@@ -68,18 +68,13 @@ public class MySQLMetadataReader extends DbMetadataReader implements MetadataRea
             result.append(FK_SECTION).append(LINE_SEPARATOR);
             result.append(getTableForeignKeyWithDescription());
 
-            result.append("query create table");
-            result.append(fillDB());
+            result.append("query create table").append(LINE_SEPARATOR);
+            result.append(queryCreateTables());
 
         } catch (Exception e) {
             e.printStackTrace();
         }
         return result.toString();
-    }
-
-    private String fillDB() {
-
-        return "";
     }
 
     private String getTableComment() {
@@ -228,5 +223,47 @@ public class MySQLMetadataReader extends DbMetadataReader implements MetadataRea
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    private String queryCreateTables() {
+
+        return "CREATE TABLE `test`.`students` (\n" +
+                "  `student_id` INT NOT NULL,\n" +
+                "  `student_name` VARCHAR(45) NULL,\n" +
+                "  `student age` INT(11) NULL,\n" +
+                "  PRIMARY KEY (`student_id`),\n" +
+                "  INDEX `student_age` (`student age` DESC),\n" +
+                "  INDEX `student_name` (`student_name` ASC),\n" +
+                "  INDEX `student_name_age` (`student age` ASC, `student_name` DESC))\n" +
+                "COMMENT = 'Table for students';\n" +
+                "\n" +
+                "CREATE TABLE `test`.`course` (\n" +
+                "  `course_id` INT NOT NULL,\n" +
+                "  `course_name` VARCHAR(45) NULL,\n" +
+                "  `course_duration` INT(11) NULL,\n" +
+                "  PRIMARY KEY (`course_id`),\n" +
+                "  INDEX `course_name` (`course_name` ASC),\n" +
+                "  INDEX `course_name_duration` (`course_name` ASC, `course_duration` DESC))\n" +
+                "COMMENT = 'Table for cources';\n" +
+                "\n" +
+                "\n" +
+                "CREATE TABLE `test`.`study` (\n" +
+                "  `study_id` INT NOT NULL,\n" +
+                "  `student_id` INT(11) NOT NULL DEFAULT 1,\n" +
+                "  `course_id` INT(11) NOT NULL DEFAULT 1,\n" +
+                "  PRIMARY KEY (`study_id`),\n" +
+                "  INDEX `idx_course_student` (`student_id` ASC, `course_id` ASC),\n" +
+                "  INDEX `fk_course_id_idx` (`course_id` ASC),\n" +
+                "  CONSTRAINT `fk_student_id`\n" +
+                "    FOREIGN KEY (`student_id`)\n" +
+                "    REFERENCES `test`.`students` (`student_id`)\n" +
+                "    ON DELETE NO ACTION\n" +
+                "    ON UPDATE NO ACTION,\n" +
+                "  CONSTRAINT `fk_course_id`\n" +
+                "    FOREIGN KEY (`course_id`)\n" +
+                "    REFERENCES `test`.`course` (`course_id`)\n" +
+                "    ON DELETE NO ACTION\n" +
+                "    ON UPDATE NO ACTION)\n" +
+                "COMMENT = 'Table for study';\n";
     }
 }
