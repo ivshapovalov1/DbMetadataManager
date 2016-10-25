@@ -1,3 +1,3 @@
 # DbMetadataManager
 
-This project is a pair programming hackaton.
+This project is a pair programming practice.
