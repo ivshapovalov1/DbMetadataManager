@@ -59,5 +59,4 @@ public abstract class DbMetadataReader implements MetadataReader {
     public abstract List<String> getTableForeignKeyWithDescription();
     @Override
     public abstract String queryCreateTables();
-
 }
