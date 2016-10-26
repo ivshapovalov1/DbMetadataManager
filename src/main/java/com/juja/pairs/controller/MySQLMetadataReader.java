@@ -93,7 +93,7 @@ public class MySQLMetadataReader extends DbMetadataReader {
                     nullable = "null";
                 }
                 line.append(nullable).append(COLUMN_SEPARATOR);
-                line.append(rs.getString("COLUMN_DEFAULT")).append(COLUMN_SEPARATOR);
+                line.append(rs.getString("COLUMN_DEFAULT"));
                 columnsWithDescription.add(line.toString());
             }
             return columnsWithDescription;
@@ -129,7 +129,7 @@ public class MySQLMetadataReader extends DbMetadataReader {
                 }
                 line.append(indexName).append(COLUMN_SEPARATOR);
                 line.append(rs.getString("INDEX_TYPE")).append(COLUMN_SEPARATOR);
-                line.append(indexContent.get(indexName)).append(COLUMN_SEPARATOR);
+                line.append(indexContent.get(indexName));
                 indexesWithDescription.add(line.toString());
 
                 indexContent.remove(indexName);
@@ -178,7 +178,7 @@ public class MySQLMetadataReader extends DbMetadataReader {
                 line.append(fkName).append(COLUMN_SEPARATOR);
                 line.append(foreignKeyContent.get(fkName)).append(COLUMN_SEPARATOR);
                 line.append(rs.getString("REFERENCED_TABLE_NAME")).append(COLUMN_SEPARATOR);
-                line.append(foreignKeyReferencedContent.get(fkName)).append(COLUMN_SEPARATOR);
+                line.append(foreignKeyReferencedContent.get(fkName));
 
                 foreignKeysWithDescription.add(line.toString());
                 foreignKeyContent.remove(fkName);

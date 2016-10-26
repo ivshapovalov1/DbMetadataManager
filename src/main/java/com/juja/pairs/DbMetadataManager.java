@@ -16,7 +16,7 @@ public class DbMetadataManager {
     final static Logger logger = Logger.getLogger(DbMetadataManager.class);
     public static void main(String[] args) {
 
-        logAppender=defineAppender(args[1]);
+        logAppender=defineAppender(args[2]);
         logger.addAppender(logAppender);
 
         View inputView=new FileView(args[0]);
@@ -34,10 +34,9 @@ public class DbMetadataManager {
 
     private static Appender defineAppender(String logPath) {
         //TODO какие нибудь проверки есть ли путь, файл
-        Path path = FileSystems.getDefault().getPath(logPath).getParent();
         FileAppender fa = new FileAppender();
         fa.setName("FileLogger");
-        fa.setFile(path.resolve("log.txt").toString());
+        fa.setFile(logPath);
         fa.setLayout(new PatternLayout("%d %-5p [%c{1}] %m%n"));
         fa.setThreshold(Level.DEBUG);
         fa.setAppend(true);
@@ -45,6 +44,4 @@ public class DbMetadataManager {
         return fa;
     }
     
-    //some ref
-
 }

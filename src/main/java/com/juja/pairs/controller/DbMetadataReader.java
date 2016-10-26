@@ -13,6 +13,7 @@ public abstract class DbMetadataReader implements MetadataReader {
     public static final String FIELD_SECTION = "field";
     public static final String INDEX_SECTION = "index";
     public static final String FK_SECTION = "fk";
+    private static final String QUERY_SECTION = "query create table";
 
     Connection connection;
     ConnectionParameters parameters;
@@ -41,7 +42,7 @@ public abstract class DbMetadataReader implements MetadataReader {
                     ) {
                 result.append(line).append(LINE_SEPARATOR);
             }
-            result.append("query create table").append(LINE_SEPARATOR);
+            result.append(QUERY_SECTION).append(LINE_SEPARATOR);
             result.append(queryCreateTables());
 
         } catch (Exception e) {
