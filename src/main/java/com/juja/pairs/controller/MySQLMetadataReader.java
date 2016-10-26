@@ -2,6 +2,7 @@ package com.juja.pairs.controller;
 
 import com.juja.pairs.model.ConnectionParameters;
 import com.mysql.jdbc.Driver;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.sql.*;
@@ -10,7 +11,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MySQLMetadataReader extends DbMetadataReader {
+import static com.juja.pairs.DbMetadataManager.logAppender;
+
+public class MySQLMetadataReader extends SQLMetadataReader {
+    private final static Logger logger = Logger.getLogger(MySQLMetadataReader.class);
+
+    static {
+        logger.addAppender(logAppender);
+    }
 
     static {
         try {
@@ -38,7 +46,7 @@ public class MySQLMetadataReader extends DbMetadataReader {
         String dbPassword = "root";
         String dbTableName = "study";
 
-        parameters=new ConnectionParameters.Builder()
+        parameters = new ConnectionParameters.Builder()
                 .addDbType(dbType)
                 .addIpHost(ipHost)
                 .addIpPort(ipPort)
@@ -54,7 +62,7 @@ public class MySQLMetadataReader extends DbMetadataReader {
         try {
             connection = DriverManager.getConnection(url, parameters.getDbUser(), parameters.getDbPassword());
         } catch (SQLException e) {
-            throw new RuntimeException(String.format("Unable to connect to database '%s', user '%s', password '%s'",
+            logger.error(String.format("Unable to connect to database '%s', user '%s', password '%s'",
                     parameters.getDbName(), parameters.getDbUser(), parameters.getDbPassword()),
                     e);
         }
@@ -65,7 +73,7 @@ public class MySQLMetadataReader extends DbMetadataReader {
             try {
                 connection.close();
             } catch (SQLException e) {
-                throw new RuntimeException("Unable to close connection", e);
+                logger.error("Unable to close connection", e);
             }
         }
     }
@@ -81,7 +89,10 @@ public class MySQLMetadataReader extends DbMetadataReader {
             }
             return "";
         } catch (SQLException e) {
-            throw new RuntimeException("It is not possible to obtain the comment of table", e);
+            String message = String.format("It is not possible to obtain the comment of table '%s' in " +
+                    "database '%s'", parameters.getDbTableName(), parameters.getDbName());
+            logger.error(message, e);
+            throw new RuntimeException(message,e);
         }
     }
 
@@ -93,7 +104,7 @@ public class MySQLMetadataReader extends DbMetadataReader {
                              "WHERE table_name = '%s' AND table_schema = '%s'",
                      parameters.getDbTableName(), parameters.getDbName()))) {
             while (rs.next()) {
-                StringBuilder line=new StringBuilder();
+                StringBuilder line = new StringBuilder();
                 line.append(rs.getString("COLUMN_NAME")).append(COLUMN_SEPARATOR);
                 line.append(rs.getString("COLUMN_COMMENT")).append(COLUMN_SEPARATOR);
                 String columnFullType = rs.getString("COLUMN_TYPE");
@@ -113,11 +124,14 @@ public class MySQLMetadataReader extends DbMetadataReader {
             }
             return columnsWithDescription;
         } catch (SQLException e) {
-            throw new RuntimeException("It is not possible to obtain the description of table column", e);
-        }
+            String message = String.format("It is not possible to obtain columns of table '%s' in " +
+                    "database '%s'", parameters.getDbTableName(), parameters.getDbName());
+            logger.error(message, e);
+            throw new RuntimeException(message,e);
+            }
     }
 
-    public   List<String> getTableIndexesWithDescription() {
+    public List<String> getTableIndexesWithDescription() {
         List<String> indexesWithDescription = new ArrayList<>();
         Map<String, String> indexContent = new HashMap<>();
         try (Statement stmt = connection.createStatement();
@@ -137,7 +151,7 @@ public class MySQLMetadataReader extends DbMetadataReader {
             }
             rs.beforeFirst();
             while (rs.next()) {
-                StringBuilder line=new StringBuilder();
+                StringBuilder line = new StringBuilder();
                 String indexName = rs.getString("INDEX_NAME");
                 if (!indexContent.containsKey(indexName)) {
                     continue;
@@ -151,11 +165,14 @@ public class MySQLMetadataReader extends DbMetadataReader {
             }
             return indexesWithDescription;
         } catch (SQLException e) {
-            throw new RuntimeException("It is not possible to obtain the description of table column", e);
+            String message = String.format("It is not possible to obtain indexes of table '%s' in " +
+                    "database '%s'", parameters.getDbTableName(), parameters.getDbName());
+            logger.error(message, e);
+            throw new RuntimeException(message,e);
         }
     }
 
-    public List<String> getTableForeignKeyWithDescription() {
+    public List<String> getTableForeignKeysWithDescription() {
         List<String> foreignKeysWithDescription = new ArrayList<>();
         Map<String, String> foreignKeyContent = new HashMap<>();
         Map<String, String> foreignKeyReferencedContent = new HashMap<>();
@@ -185,7 +202,7 @@ public class MySQLMetadataReader extends DbMetadataReader {
             }
             rs.beforeFirst();
             while (rs.next()) {
-                StringBuilder line=new StringBuilder();
+                StringBuilder line = new StringBuilder();
                 String fkName = rs.getString("CONSTRAINT_NAME");
                 if (!foreignKeyContent.containsKey(fkName)) {
                     continue;
@@ -201,7 +218,10 @@ public class MySQLMetadataReader extends DbMetadataReader {
             }
             return foreignKeysWithDescription;
         } catch (SQLException e) {
-            throw new RuntimeException("It is not possible to obtain the description of table column", e);
+            String message = String.format("It is not possible to obtain foreign keys of table '%s' in " +
+                    "database '%s'", parameters.getDbTableName(), parameters.getDbName());
+            logger.error(message, e);
+            throw new RuntimeException(message,e);
         }
 
     }
@@ -211,7 +231,9 @@ public class MySQLMetadataReader extends DbMetadataReader {
         try {
             connection.close();
         } catch (SQLException e) {
-            e.printStackTrace();
+            String message = String.format("It is not possible to close connection");
+            logger.error(message, e);
+            throw new RuntimeException(message,e);
         }
     }
 

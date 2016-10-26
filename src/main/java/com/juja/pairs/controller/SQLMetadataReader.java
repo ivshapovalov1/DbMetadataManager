@@ -1,29 +1,36 @@
 package com.juja.pairs.controller;
 
 import com.juja.pairs.model.ConnectionParameters;
+import org.apache.log4j.Logger;
 
 import java.sql.Connection;
 import java.util.List;
 
-public abstract class DbMetadataReader implements MetadataReader {
+import static com.juja.pairs.DbMetadataManager.logAppender;
+
+public abstract class SQLMetadataReader implements AutoCloseable{
+
+    private final static Logger logger = Logger.getLogger(SQLMetadataReader.class);
+    static {
+        logger.addAppender(logAppender);
+    }
 
     public static final String LINE_SEPARATOR = System.lineSeparator();
     public static final String COLUMN_SEPARATOR = "|";
 
-    public static final String FIELD_SECTION = "field";
-    public static final String INDEX_SECTION = "index";
-    public static final String FK_SECTION = "fk";
+    private static final String FIELD_SECTION = "field";
+    private static final String INDEX_SECTION = "index";
+    private static final String FK_SECTION = "fk";
     private static final String QUERY_SECTION = "query create table";
 
     Connection connection;
     ConnectionParameters parameters;
 
-    public DbMetadataReader(ConnectionParameters parameters) {
+    public SQLMetadataReader(ConnectionParameters parameters) {
         this.parameters = parameters;
     }
 
-    @Override
-    public String read() {
+     public String read() {
         StringBuilder result = new StringBuilder(parameters.getDbTableName()).append(LINE_SEPARATOR);
         try {
             result.append(getTableComment()).append(LINE_SEPARATOR);
@@ -38,7 +45,7 @@ public abstract class DbMetadataReader implements MetadataReader {
                 result.append(line).append(LINE_SEPARATOR);
             }
             result.append(FK_SECTION).append(LINE_SEPARATOR);
-            for (String line:getTableForeignKeyWithDescription()
+            for (String line: getTableForeignKeysWithDescription()
                     ) {
                 result.append(line).append(LINE_SEPARATOR);
             }
@@ -46,18 +53,18 @@ public abstract class DbMetadataReader implements MetadataReader {
             result.append(queryCreateTables());
 
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(e.getMessage(),e);
         }
         return result.toString();
     }
-    @Override
+
     public abstract String getTableComment();
-    @Override
+
     public abstract List<String> getTableColumnsWithDescription();
-    @Override
+
     public abstract List<String> getTableIndexesWithDescription();
-    @Override
-    public abstract List<String> getTableForeignKeyWithDescription();
-    @Override
+
+    public abstract List<String> getTableForeignKeysWithDescription();
+
     public abstract String queryCreateTables();
 }

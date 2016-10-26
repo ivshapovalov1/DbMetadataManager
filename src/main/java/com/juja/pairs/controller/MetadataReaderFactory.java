@@ -3,7 +3,7 @@ package com.juja.pairs.controller;
 import com.juja.pairs.model.ConnectionParameters;
 
 public class MetadataReaderFactory {
-    public static MetadataReader getReader(ConnectionParameters parameters) {
+    public static SQLMetadataReader getReader(ConnectionParameters parameters) {
 
         if (parameters.getDbType().equalsIgnoreCase("MySQL")) {
             return new MySQLMetadataReader(parameters);

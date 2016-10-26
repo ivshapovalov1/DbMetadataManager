@@ -3,11 +3,10 @@ package com.juja.pairs.controller;
 import com.juja.pairs.model.ConnectionParameters;
 
 import java.io.IOException;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
-public class PostgreSQLMetadataReader extends DbMetadataReader {
+public class PostgreSQLMetadataReader extends SQLMetadataReader {
 
     //TODO Все методы
     public PostgreSQLMetadataReader(ConnectionParameters parameters) {
@@ -44,7 +43,7 @@ public class PostgreSQLMetadataReader extends DbMetadataReader {
     }
 
     @Override
-    public List<String> getTableForeignKeyWithDescription() {
+    public List<String> getTableForeignKeysWithDescription() {
         return null;
     }
 

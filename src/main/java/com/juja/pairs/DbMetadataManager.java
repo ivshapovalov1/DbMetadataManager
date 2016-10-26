@@ -1,6 +1,6 @@
 package com.juja.pairs;
 
-import com.juja.pairs.controller.MetadataReader;
+import com.juja.pairs.controller.SQLMetadataReader;
 import com.juja.pairs.controller.MetadataReaderFactory;
 import com.juja.pairs.model.ConnectionParameters;
 import com.juja.pairs.view.FileView;
@@ -21,7 +21,7 @@ public class DbMetadataManager {
         inputView.read();
         ConnectionParameters parameters = ConnectionParameters.parseFromFile(inputView.read());
         String metadata = "";
-        try (MetadataReader reader = MetadataReaderFactory.getReader(parameters)) {
+        try (SQLMetadataReader reader = MetadataReaderFactory.getReader(parameters)) {
             metadata = reader.read();
         } catch (Exception e) {
             logger.error(e);
