@@ -30,7 +30,24 @@ public class MySQLMetadataReader extends DbMetadataReader {
 
     public MySQLMetadataReader(ConnectionParameters parameters) {
         super(parameters);
-        //TODO Connection
+        String dbType = "MySQL";
+        String ipHost = "127.0.0.1";
+        String ipPort = "3306";
+        String dbName = "test";
+        String dbUser = "root";
+        String dbPassword = "root";
+        String dbTableName = "study";
+
+        parameters=new ConnectionParameters.Builder()
+                .addDbType(dbType)
+                .addIpHost(ipHost)
+                .addIpPort(ipPort)
+                .addDbName(dbName)
+                .addDbUser(dbUser)
+                .addDbPassword(dbPassword)
+                .addDbTableName(dbTableName)
+                .build();
+
         closeOpenedConnection(connection);
 
         String url = String.format("jdbc:mysql://%s:%s/%s", parameters.getIpHost(), parameters.getIpPort(), parameters.getDbName());
@@ -52,8 +69,6 @@ public class MySQLMetadataReader extends DbMetadataReader {
             }
         }
     }
-
-
 
     public String getTableComment() {
 

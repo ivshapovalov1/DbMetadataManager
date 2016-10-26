@@ -9,15 +9,14 @@ public class ConnectionParameters {
     private String dbPassword;
     private String dbTableName;
 
-
     public static ConnectionParameters parseFromFile(String fileName) {
         String dbType = "MySQL";
-        String ipHost = "127.0.0.1";
-        String ipPort = "3306";
-        String dbName = "test";
-        String dbUser = "root";
-        String dbPassword = "root";
-        String dbTableName = "study";
+        String ipHost = "";
+        String ipPort = "";
+        String dbName = "";
+        String dbUser = "";
+        String dbPassword = "";
+        String dbTableName = "";
 
         //TODO parse from file
         return new ConnectionParameters.Builder()
@@ -118,8 +117,7 @@ public class ConnectionParameters {
         }
 
         public ConnectionParameters build() {
-            ConnectionParameters connectionParameters = new ConnectionParameters(this);
-            return connectionParameters;
+            return new ConnectionParameters(this);
         }
     }
 }
