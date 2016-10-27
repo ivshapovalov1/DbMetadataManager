@@ -1,6 +1,4 @@
-package com.juja.pairs;
-
-import org.junit.Test;
+package java.com.juja.pairs;
 
 public class IntegrationTest {
 
