@@ -11,9 +11,11 @@ public class FileContentGetter {
      * the appropriate file with necessary input parameters
      * was located in the resources package.
     */
-    public static String getTestContent(String fileName){
+    private static String getStubContent(){
+        String fileName = "Test.txt";
         String readLine;
         StringBuilder builder = new StringBuilder();
+
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         InputStream inputStream = classLoader.getResourceAsStream(fileName);
 
@@ -38,15 +40,10 @@ public class FileContentGetter {
                 builder.append(readLine).append("\n");
             }
         } catch (FileNotFoundException fe){
-            return getTestContent(fileName);
+            return getStubContent();
         } catch (IOException io){
             io.printStackTrace();
         }
-
-
-
-
         return builder.toString();
-
     }
 }

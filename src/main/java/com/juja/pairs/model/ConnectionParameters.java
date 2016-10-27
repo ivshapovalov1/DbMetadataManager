@@ -10,15 +10,17 @@ public class ConnectionParameters {
     private String dbTableName;
 
     public static ConnectionParameters parseFromFile(String fileName) {
-        String dbType = "MySQL";
-        String ipHost = "";
-        String ipPort = "";
-        String dbName = "";
-        String dbUser = "";
-        String dbPassword = "";
-        String dbTableName = "";
+        String fileContent = FileContentGetter.getContent(fileName);
+        String [] paramArray = fileContent.split("\\n");
+        //TODO check amount of parameters
+        String dbType = paramArray[0];
+        String ipHost = paramArray[1];
+        String ipPort = paramArray[2];
+        String dbName = paramArray[3];
+        String dbUser = paramArray[4];
+        String dbPassword = paramArray[5];
+        String dbTableName = paramArray[6];
 
-        //TODO parse from file
         return new ConnectionParameters.Builder()
                 .addDbType(dbType)
                 .addIpHost(ipHost)
