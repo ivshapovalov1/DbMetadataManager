@@ -46,7 +46,7 @@ public class FileView implements View {
     * was located in the resources package.
    */
     private static String getStubContent(){
-        String fileName = "Test.txt";
+        String fileName = "PostgresConParam.txt";
         String readLine;
         StringBuilder builder = new StringBuilder();
 
