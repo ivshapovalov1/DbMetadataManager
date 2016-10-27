@@ -1,0 +1,7 @@
+MySql
+localhost
+3306
+testdb
+root
+root
+users

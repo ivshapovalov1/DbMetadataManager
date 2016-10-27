@@ -1,4 +1,4 @@
-package com.juja.pairs;
+package java.com.juja.pairs;
 
 
 import org.junit.Test;
