@@ -4,7 +4,9 @@ import com.juja.pairs.model.ConnectionParameters;
 
 import java.io.IOException;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 
 public class PostgreSQLMetadataReader extends SQLMetadataReader {
@@ -16,7 +18,6 @@ public class PostgreSQLMetadataReader extends SQLMetadataReader {
         }
     }
 
-    //TODO Все методы
     public PostgreSQLMetadataReader(ConnectionParameters parameters) {
         super(parameters);
         String dbType = parameters.getDbType().toLowerCase();
@@ -57,7 +58,20 @@ public class PostgreSQLMetadataReader extends SQLMetadataReader {
 
     @Override
     public String getTableComment() {
-        return null;
+        String SQLquerry = String
+                .format("select obj_description('public.%s'::regclass)",parameters.getDbTableName());
+        StringBuilder builder = new StringBuilder();
+        try(Statement statement = connection.createStatement())
+            {
+            ResultSet resultSet = statement.executeQuery(SQLquerry);
+
+            while (resultSet.next()) {
+                builder.append(resultSet.getString("obj_description"));
+            }
+        } catch (SQLException ex){
+            ex.printStackTrace();
+        }
+        return builder.toString();
     }
 
     @Override
