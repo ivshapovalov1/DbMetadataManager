@@ -4,10 +4,7 @@ import com.juja.pairs.model.ConnectionParameters;
 
 import java.io.IOException;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class PostgreSQLMetadataReader extends SQLMetadataReader {
     static {
@@ -107,7 +104,39 @@ public class PostgreSQLMetadataReader extends SQLMetadataReader {
 
     @Override
     public List<String> getTableIndexesWithDescription() {
-        return null;
+        List<String> result = new ArrayList();
+
+        String SQLquerry = "select t.relname as table_name, i.relname as index_name, " +
+                "a.attname as column_name from pg_class t, pg_class i, pg_index ix," +
+                " pg_attribute a where t.oid = ix.indrelid and i.oid = ix.indexrelid" +
+                " and a.attrelid = t.oid and a.attnum = ANY(ix.indkey)" +
+                " and t.relkind = 'r' and t.relname = ?" +
+                " order by t.relname, i.relname";
+        Map<String,HashSet<String>> index = new HashMap<>();
+        try (PreparedStatement statement = connection.prepareStatement(SQLquerry)){
+            statement.setString(1,parameters.getDbTableName());
+            ResultSet set = statement.executeQuery();
+            while (set.next()){
+                String indexName = set.getString("index_name");
+                String columnName = set.getString("column_name");
+                HashSet <String> localSet = index.get(indexName);
+                if (localSet == null){
+                    localSet = new HashSet<>();
+                }
+                localSet.add(columnName);
+                index.put(indexName,localSet);
+            }
+            for(Map.Entry mapEntry:index.entrySet()){
+                StringBuilder builder = new StringBuilder();
+                builder.append(mapEntry.getKey()).append(COLUMN_SEPARATOR);
+                builder.append("index type").append(COLUMN_SEPARATOR);
+                builder.append(mapEntry.getValue().toString().replaceAll("[\\[\\] ]",""));
+                result.add(builder.toString());
+            }
+        }catch (SQLException ex){
+            ex.printStackTrace();
+        }
+        return result;
     }
 
     @Override
