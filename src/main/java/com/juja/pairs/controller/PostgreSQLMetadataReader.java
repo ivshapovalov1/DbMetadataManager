@@ -66,6 +66,19 @@ public class PostgreSQLMetadataReader extends SQLMetadataReader {
                 Map<String,String> map = columnsComments();
                 String columnComment = map.get(columnName);
                 builder.append(columnComment).append(COLUMN_SEPARATOR);
+                builder.append(resultSet.getString("data_type")).append(COLUMN_SEPARATOR);
+                String fieldLength = resultSet.getString("character_maximum_length");
+                if ("null".equals(fieldLength)){
+                    builder.append(fieldLength).append(COLUMN_SEPARATOR);
+                }
+                String nullAble = resultSet.getString("is_nullable");
+                if ("yes".equalsIgnoreCase(nullAble)){
+                    nullAble = "null";
+                } else {
+                    nullAble = "not null";
+                }
+                builder.append(nullAble).append(COLUMN_SEPARATOR);
+                builder.append(resultSet.getString("column_default")).append(COLUMN_SEPARATOR);
                 result.add(builder.toString());
             }
         }catch (SQLException ex){
@@ -107,7 +120,7 @@ public class PostgreSQLMetadataReader extends SQLMetadataReader {
         return null;
     }
 
-    public Map columnsComments(){
+    private Map columnsComments(){
         String SQLquerry = "SELECT c.table_schema,c.table_name,c.column_name,pgd.description\n" +
                 "FROM pg_catalog.pg_statio_all_tables as st\n" +
                 "  inner join pg_catalog.pg_description pgd on (pgd.objoid=st.relid)\n" +
