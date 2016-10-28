@@ -3,11 +3,11 @@ package com.juja.pairs.controller;
 import com.juja.pairs.model.ConnectionParameters;
 
 import java.io.IOException;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class PostgreSQLMetadataReader extends SQLMetadataReader {
     static {
@@ -53,7 +53,25 @@ public class PostgreSQLMetadataReader extends SQLMetadataReader {
 
     @Override
     public List<String> getTableColumnsWithDescription() {
-        return null;
+        String SQLquerry = "SELECT * FROM information_schema.columns WHERE" +
+                " table_schema = 'public' AND table_name = ?";
+        List<String> result = new ArrayList<>();
+        try (PreparedStatement statement = connection.prepareStatement(SQLquerry)){
+            statement.setString(1,parameters.getDbTableName());
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()){
+                StringBuilder builder = new StringBuilder();
+                String columnName = resultSet.getString("column_name");
+                builder.append(columnName).append(COLUMN_SEPARATOR);
+                Map<String,String> map = columnsComments();
+                String columnComment = map.get(columnName);
+                builder.append(columnComment).append(COLUMN_SEPARATOR);
+                result.add(builder.toString());
+            }
+        }catch (SQLException ex){
+            ex.printStackTrace();
+        }
+        return result;
     }
 
     @Override
@@ -87,5 +105,25 @@ public class PostgreSQLMetadataReader extends SQLMetadataReader {
     @Override
     public String queryCreateTables() {
         return null;
+    }
+
+    public Map columnsComments(){
+        String SQLquerry = "SELECT c.table_schema,c.table_name,c.column_name,pgd.description\n" +
+                "FROM pg_catalog.pg_statio_all_tables as st\n" +
+                "  inner join pg_catalog.pg_description pgd on (pgd.objoid=st.relid)\n" +
+                "  inner join information_schema.columns c on (pgd.objsubid=c.ordinal_position\n" +
+                "    and  c.table_schema=st.schemaname and c.table_name=st.relname)";
+        Map <String,String> map = new HashMap<>();
+        try (Statement statement = connection.createStatement()){
+            ResultSet set = statement.executeQuery(SQLquerry);
+            while (set.next()){
+                String columnName = set.getString("column_name");
+                String columnComment = set.getString("description");
+                map.put(columnName,columnComment);
+            }
+        }catch (SQLException ex){
+            ex.printStackTrace();
+        }
+        return map;
     }
 }
